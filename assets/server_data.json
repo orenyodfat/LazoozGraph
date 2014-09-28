@@ -2,6 +2,10 @@
 
 "stats_data_week":[{"distance":2,"day":"2"},{"distance":5,"day":"3"},{"distance":3,"day":"4"},{"distance":9,"day":"5"}],
 
+"stats_data_days":[{"distance":2,"day":"2"},{"distance":5,"day":"3"},{"distance":3,"day":"4"},{"distance":9,"day":"5"}],
+
+"stats_data_total_days":[{"distance":100,"day":"2"},{"distance":50,"day":"3"},{"distance":13,"day":"4"},{"distance":9,"day":"5"}],
+
 "stats_data_month":[{"distance":7,"day":21},{"distance":2,"day":22},{"distance":5,"day":23},{"distance":6,"day":24},{"distance":2,"day":25},{"distance":9,"day":26}],
 
 "stats_data_year":[{"month":9,"distance":9}, {"month":10,"distance":13},{"month":11,"distance":8}],

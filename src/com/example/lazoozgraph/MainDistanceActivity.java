@@ -76,6 +76,11 @@ public class MainDistanceActivity extends ActionBarActivity {
 	
 	private TextView mDistanceTV;
 	public StatsDataMinersDistDayList mStatsDataWeekList;
+	public StatsDataMinersDistDayList mStatsDataWeekTotalList;
+	
+	public StatsDataMinersDistDayList mStatsDataDaysList;
+	public StatsDataMinersDistDayList mStatsDataDaysTotalList;
+	
 	public StatsDataMinersDistDayList mStatsDataMonthList;
 	public StatsDataMinersDistMonthList mStatsDataYearList;
 	private ProgressBar mProgBar;
@@ -116,8 +121,9 @@ public class MainDistanceActivity extends ActionBarActivity {
 		
 		//buildChartDist1();
 		//buildChartDist2();
-		buildChartDist3();
+		//buildChartDist3();
 		openChart();
+		openChartTotal();
 		//openChart2();
 		
 	}
@@ -273,7 +279,23 @@ public class MainDistanceActivity extends ActionBarActivity {
 			statsArray = jsonReturnObj.getJSONArray("stats_data_week");
 			Log.e("TAG", statsArray.toString());
 			mStatsDataWeekList = new StatsDataMinersDistDayList(statsArray);
-
+			
+			jsonReturnObj = readJasonFile();
+			statsArray = jsonReturnObj.getJSONArray("stats_data_days");
+			Log.e("TAG", statsArray.toString());
+			mStatsDataDaysList = new StatsDataMinersDistDayList(statsArray);
+			
+			jsonReturnObj = readJasonFile();
+			statsArray = jsonReturnObj.getJSONArray("stats_data_total_days");
+			Log.e("TAG", statsArray.toString());
+			mStatsDataDaysTotalList = new StatsDataMinersDistDayList(statsArray);
+			
+			jsonReturnObj = readJasonFile();
+			statsArray = jsonReturnObj.getJSONArray("stats_data_week");
+			Log.e("TAG", statsArray.toString());
+			mStatsDataWeekList = new StatsDataMinersDistDayList(statsArray);
+			
+			
 			statsArray = jsonReturnObj.getJSONArray("stats_data_month");
 			Log.e("TAG", statsArray.toString());
 			mStatsDataMonthList = new StatsDataMinersDistDayList(statsArray);
@@ -291,20 +313,20 @@ public class MainDistanceActivity extends ActionBarActivity {
 			e.printStackTrace();
 		}
 	}
-		
-	private void openChart(){
+    
+	private void openChartTotal(){
 		 
 		String[] chartTitles;
  		chartTitles = new String[] { "Total"};
 		List<double[]> values = new ArrayList<double[]>();
-	    values.add(mStatsDataWeekList.getDataDoubleArray());
+	    values.add(mStatsDataDaysTotalList.getDataDoubleArray());
 	    int totalXlength = 0;
 	    
     	
 	    XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
 	    
         List<double[]> xAxisValues = new ArrayList<double[]>();
-	    xAxisValues.add(mStatsDataWeekList.getXDoubleArray());
+	    xAxisValues.add(mStatsDataDaysTotalList.getXDoubleArray());
 	    
 	    for (int i = 0; i < chartTitles.length; i++) {
 	    	XYSeries series = new XYSeries(chartTitles[i]);
@@ -331,7 +353,7 @@ public class MainDistanceActivity extends ActionBarActivity {
     	
         // Creating a XYMultipleSeriesRenderer to customize the whole chart
         XYMultipleSeriesRenderer multiRenderer = new XYMultipleSeriesRenderer();
-        multiRenderer.setChartTitle("Mined Km this month");
+        multiRenderer.setChartTitle("Total Community Mined Km History");
         multiRenderer.setXTitle("Days");
         multiRenderer.setYTitle("kms");
         multiRenderer.setZoomButtonsVisible(true);
@@ -340,13 +362,131 @@ public class MainDistanceActivity extends ActionBarActivity {
         multiRenderer.setMargins(new int[] { 50, 60, 60, 30 });
         multiRenderer.setAxisTitleTextSize(20);
         multiRenderer.setChartTitleTextSize(25);
-        multiRenderer.setLabelsTextSize(15);
+        multiRenderer.setLabelsTextSize(20);
+        
         
         multiRenderer.setXLabelsAlign(Align.CENTER);
         multiRenderer.setYLabelsAlign(Align.RIGHT);
         multiRenderer.setPanEnabled(true, false); // scroll only x axis so true
         multiRenderer.setZoomEnabled(false,false);
-        multiRenderer.setPointSize(6);  // increase the width of point size
+        multiRenderer.setPointSize(8);  // increase the width of point size
+        multiRenderer.setXLabelsPadding(10);
+        
+        
+        xyValues = new LinkedHashMap<Integer,String>();
+        
+        for (int i = 0; i < chartTitles.length; i++) {
+	    	double[] xV = xAxisValues.get(i);
+	    	totalXlength =  xV.length;
+	    	System.out.println("LOG len is "+totalXlength);
+	    	for(int j=0;j<totalXlength;j++){
+	    		multiRenderer.addXTextLabel(j+1, Utils.addDays(xV[j]));  
+	    		xyValues.put(j+1, Utils.addDays(xV[j]));
+	    	}    	
+        }
+        
+    	multiRenderer.setXLabels(0);
+	    multiRenderer.setShowAxes(false);
+	    multiRenderer.setXAxisMin(0);
+	    multiRenderer.setXAxisMax(10);
+	    if(totalXlength < 10){
+	    	multiRenderer.setXAxisMax(totalXlength);
+	    }
+    	multiRenderer.setPanEnabled(true);
+    	multiRenderer.setPanLimits(new double [] {0,totalXlength+1,0,0});
+    	
+    	multiRenderer.setYAxisMin(Utils.getMinValueFromList(values));
+    	multiRenderer.setYAxisMax(Utils.getMaxValueFromList(values));
+	    multiRenderer.setAxesColor(Color.GRAY);
+	    multiRenderer.setLabelsColor(Color.WHITE);
+        multiRenderer.addSeriesRenderer(incomeRenderer);
+ 
+        // Creating a Time Chart
+        mChartView3 = (GraphicalView) ChartFactory.getTimeChartView(getBaseContext(), dataset, multiRenderer,"dd-MMM-yyyy");
+ 
+        multiRenderer.setClickEnabled(true);
+        multiRenderer.setSelectableBuffer(10);
+ 
+        // Setting a click event listener for the graph
+        mChartView3.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+            	
+                SeriesSelection seriesSelection = mChartView3.getCurrentSeriesAndPoint();
+                double[] xy = mChartView3.toRealPoint(0);
+
+                if (seriesSelection != null) {
+
+                    //                  debug
+                    Log.d("Punto", seriesSelection.getXValue() + ", " + seriesSelection.getValue());
+                    //                  debug
+                    Log.d("Chart point", "Chart element in series index " + seriesSelection.getSeriesIndex() + " data point index "
+                            + seriesSelection.getPointIndex() + " was clicked" + " closest point value X=" + seriesSelection.getXValue()
+                            + ", Y=" + seriesSelection.getValue() + " clicked point value X=" + (float) xy[0] + ", Y=" + (float) xy[1]);
+                    
+                    Toast.makeText(getBaseContext(),"" +xyValues.get((int)seriesSelection.getXValue()) + " , " + seriesSelection.getValue() +" km" ,Toast.LENGTH_SHORT).show();               }
+            }
+        });
+ 
+            // Adding the Line Chart to the LinearLayout
+        mLayoutChart3.addView(mChartView3);
+    }
+	private void openChart(){
+		 
+		String[] chartTitles;
+ 		chartTitles = new String[] { "Total"};
+		List<double[]> values = new ArrayList<double[]>();
+	    values.add(mStatsDataDaysList.getDataDoubleArray());
+	    int totalXlength = 0;
+	    
+    	
+	    XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+	    
+        List<double[]> xAxisValues = new ArrayList<double[]>();
+	    xAxisValues.add(mStatsDataDaysList.getXDoubleArray());
+	    
+	    for (int i = 0; i < chartTitles.length; i++) {
+	    	XYSeries series = new XYSeries(chartTitles[i]);
+	    	double[] xV = xAxisValues.get(i);
+	    	double[] yV = values.get(i);
+	    	int seriesLength = xV.length;
+	      for (int k = 0; k < seriesLength; k++) {
+	    	  System.out.println("LOG X is "+xV[k]+ " y is "+yV[k]);
+	    	  series.add(xV[k]-1, yV[k]);
+	      }
+	      dataset.addSeries(series);
+	    }
+        
+        XYSeriesRenderer incomeRenderer = new XYSeriesRenderer();
+        incomeRenderer.setColor(Color.WHITE);
+        incomeRenderer.setPointStyle(PointStyle.CIRCLE);
+        incomeRenderer.setFillPoints(true);
+        incomeRenderer.setLineWidth(2);
+        incomeRenderer.setDisplayChartValues(true);
+        incomeRenderer.setDisplayChartValuesDistance(15);
+        incomeRenderer.setChartValuesTextSize(20);
+        incomeRenderer.setLineWidth(4);
+        incomeRenderer.setDisplayBoundingPoints(false); // for hiding the series when we scroll
+    	
+        // Creating a XYMultipleSeriesRenderer to customize the whole chart
+        XYMultipleSeriesRenderer multiRenderer = new XYMultipleSeriesRenderer();
+        multiRenderer.setChartTitle("My Mined Km History");
+        multiRenderer.setXTitle("Days");
+        multiRenderer.setYTitle("kms");
+        multiRenderer.setZoomButtonsVisible(true);
+        multiRenderer.setBackgroundColor(0xf7f7f7);
+        multiRenderer.setMarginsColor(0xf7f7f7);
+        multiRenderer.setMargins(new int[] { 50, 60, 60, 30 });
+        multiRenderer.setAxisTitleTextSize(20);
+        multiRenderer.setChartTitleTextSize(25);
+        multiRenderer.setLabelsTextSize(20);
+        
+        multiRenderer.setXLabelsAlign(Align.CENTER);
+        multiRenderer.setYLabelsAlign(Align.RIGHT);
+        multiRenderer.setPanEnabled(true, false); // scroll only x axis so true
+        multiRenderer.setZoomEnabled(false,false);
+        multiRenderer.setPointSize(8);  // increase the width of point size
         multiRenderer.setXLabelsPadding(10);
         
         
@@ -408,118 +548,6 @@ public class MainDistanceActivity extends ActionBarActivity {
  
             // Adding the Line Chart to the LinearLayout
         mLayoutChart2.addView(mChartView2);
-    }
-	
-	
-	private void openChart2(){
-		 
-        int[] x = { 1,2,3,4,5,6,7,8,9,10 };
-        int[] visits = { 2000,2600,2800,2000,2000,2600,2800,2000,2000,2600};
-        
-        // Creating an  XYSeries for Income
-    	XYSeries incomeSeries = new XYSeries("Visits");
-    	for(int i=0;i<x.length;i++){
-    		incomeSeries.add(x[i], visits[i]);
-    	}
-        
-        // Creating a dataset to hold each series
-        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        dataset.addSeries(incomeSeries);// Adding Visits Series to the dataset
- 
-        XYSeriesRenderer incomeRenderer = new XYSeriesRenderer();
-        incomeRenderer.setColor(Color.WHITE);
-        incomeRenderer.setPointStyle(PointStyle.CIRCLE);
-        incomeRenderer.setFillPoints(true);
-        incomeRenderer.setLineWidth(2);
-        incomeRenderer.setDisplayChartValues(false);
-        incomeRenderer.setDisplayChartValuesDistance(15);
-        incomeRenderer.setChartValuesTextSize(20);
-        incomeRenderer.setLineWidth(4);
-        incomeRenderer.setDisplayBoundingPoints(false); // for hiding the series when we scroll
-    	
-        // Creating a XYMultipleSeriesRenderer to customize the whole chart
-        XYMultipleSeriesRenderer multiRenderer = new XYMultipleSeriesRenderer();
-        multiRenderer.setChartTitle("Mined Km this month");
-        multiRenderer.setXTitle("Days");
-        multiRenderer.setYTitle("kms");
-        multiRenderer.setZoomButtonsVisible(true);
-        multiRenderer.setBackgroundColor(0xf7f7f7);
-        multiRenderer.setMarginsColor(0xf7f7f7);
-        multiRenderer.setMargins(new int[] { 50, 60, 60, 30 });
-        multiRenderer.setAxisTitleTextSize(20);
-        multiRenderer.setChartTitleTextSize(25);
-        multiRenderer.setLabelsTextSize(15);
-        
-        multiRenderer.setXLabelsAlign(Align.CENTER);
-        multiRenderer.setYLabelsAlign(Align.RIGHT);
-        multiRenderer.setPanEnabled(true, false); // scroll only x axis so true
-        multiRenderer.setZoomEnabled(false,false);
-        multiRenderer.setPointSize(6);  // increase the width of point size
-        multiRenderer.setXLabelsPadding(10);
-        
-        String[] dates = {"1-Nov-2014","2-Nov-2014","3-Nov-2014",
-        		"4-Nov-2014","5-Nov-2014","6-Nov-2014","7-Nov-2014",
-        		"8-Nov-2014","9-Nov-2014","10-Nov-2014"};
-    	
-    	for(int i=0;i<x.length;i++){
-    		multiRenderer.addXTextLabel(i+1, dates[i]);    		
-    	}    	
-
-    	multiRenderer.setXLabels(0);
-	    multiRenderer.setShowAxes(false);
-	    multiRenderer.setXAxisMax(4);
-    	multiRenderer.setXAxisMin(0);
-    	multiRenderer.setPanEnabled(true);
-    	multiRenderer.setPanLimits(new double [] {0,11,0,0});
-	    multiRenderer.setYAxisMin(2000);
-	    multiRenderer.setYAxisMax(2800);
-	    multiRenderer.setAxesColor(Color.GRAY);
-	    multiRenderer.setLabelsColor(Color.WHITE);
- 
-        multiRenderer.addSeriesRenderer(incomeRenderer);
- 
-        // Creating a Time Chart
-        mChartView3 = (GraphicalView) ChartFactory.getTimeChartView(getBaseContext(), dataset, multiRenderer,"dd-MMM-yyyy");
- 
-        multiRenderer.setClickEnabled(true);
-        multiRenderer.setSelectableBuffer(10);
- 
-        // Setting a click event listener for the graph
-        mChartView3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Format formatter = new SimpleDateFormat("dd-MMM-yyyy");
- 
-                SeriesSelection seriesSelection = mChartView3.getCurrentSeriesAndPoint();
- 
-                if (seriesSelection != null) {
-                    int seriesIndex = seriesSelection.getSeriesIndex();
-                    String selectedSeries="Visits";
-                    if(seriesIndex==0)
-                        selectedSeries = "Visits";
-                    else
-                        selectedSeries = "Views";
- 
-                    // Getting the clicked Date ( x value )
-                    long clickedDateSeconds = (long) seriesSelection.getXValue();
-                    Date clickedDate = new Date(clickedDateSeconds);
-                    String strDate = formatter.format(clickedDate);
- 
-                    // Getting the y value
-                    int amount = (int) seriesSelection.getValue();
- 
-                    // Displaying Toast Message
-                    Toast.makeText(
-                        getBaseContext(),
-                        selectedSeries + " on "  + strDate + " : " + amount ,
-                        Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
- 
-            // Adding the Line Chart to the LinearLayout
-        mLayoutChart3.addView(mChartView3);
-    }
-	
+    }	
 	
 }
