@@ -40,7 +40,7 @@ public class StatsDataMinersDistDayList {
 		for(StatsDataMinersDistDay point : mList){
 			data = Double.valueOf(point.getDistance());
 			dataDoubleArray[i++] = data;
-			XDoubleArray[k++] = i;
+			XDoubleArray[k++] = Double.valueOf(point.getDay());
 			minVal = Math.min(minVal, data);
 			maxVal = Math.max(maxVal, data);
 		}

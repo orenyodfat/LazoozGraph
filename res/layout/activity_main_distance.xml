@@ -12,6 +12,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
+    
+    
+	<!-- <RelativeLayout 
+	    android:layout_width="match_parent"
+        android:layout_height="match_parent"
+         > -->
+        
+	    
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +30,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="1.2"
             android:background="@drawable/mined_loc_up"
             android:orientation="horizontal" >
 
@@ -58,14 +66,14 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight="1.2"
                 android:orientation="vertical" >
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <FrameLayout
+        <!-- <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -106,9 +114,10 @@
                 android:id="@+id/report_chart_1"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
+                android:visibility="gone"
                 android:orientation="vertical" >
             </LinearLayout>
-        </FrameLayout>
+        </FrameLayout> -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -127,6 +136,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical" >
             </LinearLayout>
+           
         </LinearLayout>
 
         <LinearLayout
@@ -148,6 +158,12 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
+    
+    <!--  <com.example.lazoozgraph.utils.PaintView
+		        android:id="@+id/paint_view"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"/> 
+</RelativeLayout>-->
+    
 </FrameLayout>
 
